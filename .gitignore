@@ -1,0 +1,7 @@
+/vendor
+/node_modules
+.env
+vendor/
+bower_components/
+.idea/
+.env*

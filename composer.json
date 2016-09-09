@@ -1,0 +1,23 @@
+{
+    "name": "foothing/php-kpi",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "brazorf",
+            "email": "fabrizio.ranieri@gmail.com"
+        }
+    ],
+    "require": {},
+	"autoload": {
+		"psr-4": {
+			"Foothing\\": "src/Foothing"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"Foothing\\Wrappr\\Tests\\": "tests"
+		}
+	},
+	"minimum-stability": "stable",
+	"prefer-stable": true
+}
