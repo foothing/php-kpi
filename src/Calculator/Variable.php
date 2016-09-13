@@ -13,4 +13,5 @@ class Variable {
     public $weekOfMonth;
     public $type;
 
+    public $value;
 }

@@ -4,6 +4,8 @@ use Foothing\Kpi\Calculator\Exceptions\InvalidFormulaException;
 
 class FormulaParser {
 
+    protected static $REGEX_VARIABLE = "/\{([a-zA-z_]+)\(([0-9]{4}|CUR|PREV),([0-9]{2}),([0-9]{2}),([0-9]),([0-9]),(TD|RT)\)\}/";
+
     /**
      * Parse variables from a math formula. Variables are expected to be
      * in the form of {NAME(YEAR,MONTH,DAY,WEEKOFYEAR,WEEKOFMONTH,SAMPLE)} where
@@ -26,11 +28,9 @@ class FormulaParser {
             throw new InvalidFormulaException("Formula is empty.");
         }
 
-        $regex = "/\{([a-zA-z_]+)\(([0-9]{4}|CUR|PREV),([0-9]{2}),([0-9]{2}),([0-9]),([0-9]),(TD|RT)\)\}/";
-
         //$sample = "{AUTO_RC(2015,09,12,0,0,TD)}";
-        preg_match_all($regex, $formula, $result);
-
+        preg_match_all(self::$REGEX_VARIABLE, $formula, $result);
+//var_dump($result);
         // No variables in this formula.
         if (! $result) {
             return null;
@@ -46,6 +46,7 @@ class FormulaParser {
         // Build the variables.
         for ($i = 0; $i < $matches; $i++) {
             $variables[$i] = new Variable();
+            $variables[$i]->raw = $result[0][$i];
             $variables[$i]->name = $result[1][$i];
             $variables[$i]->year = $this->parseYear($result[2][$i]);
             $variables[$i]->month = $result[3][$i];
@@ -56,6 +57,14 @@ class FormulaParser {
         }
 
         return $variables;
+    }
+
+    public function compile($formula, array $variables) {
+        foreach ($variables as $variable) {
+            $formula = str_replace($variable->raw, $variable->value, $formula);
+        }
+
+        return $formula;
     }
 
     public function parseYear($year) {
