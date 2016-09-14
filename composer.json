@@ -8,7 +8,6 @@
         }
     ],
     "require": {
-        "denissimon/formula-parser": "dev-master",
 		"mossadal/math-parser": "1.2.*"
     },
 	"autoload": {
@@ -23,12 +22,6 @@
 	},
 	"minimum-stability": "stable",
 	"prefer-stable": true,
-	"repositories": [
-		{
-			"type": "vcs",
-			"url": "https://github.com/brazorf/formula-parser"
-		}
-	],
     "require-dev": {
         "mockery/mockery": "^0.9.5"
     }
