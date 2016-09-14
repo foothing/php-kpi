@@ -1,0 +1,59 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "This file is @generated automatically"
+    ],
+    "hash": "459826082e955527ab06dd129b6480a4",
+    "content-hash": "11e8f6ba27811c619e9d559fbd2b1cc9",
+    "packages": [
+        {
+            "name": "nxp/math-executor",
+            "version": "v0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/NeonXP/MathExecutor.git",
+                "reference": "abc629a10b5b4f374ec97d826c70c00e45ac2f95"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/NeonXP/MathExecutor/zipball/abc629a10b5b4f374ec97d826c70c00e45ac2f95",
+                "reference": "abc629a10b5b4f374ec97d826c70c00e45ac2f95",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "NXP": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPLv2"
+            ],
+            "authors": [
+                {
+                    "name": "Alexander 'NeonXP' Kiryukhin",
+                    "email": "frei@neonxp.info"
+                }
+            ],
+            "description": "Simple math expressions calculator",
+            "homepage": "http://github.com/NeonXP/MathExecutor",
+            "keywords": [
+                "calculator",
+                "expression",
+                "math",
+                "parser"
+            ],
+            "time": "2013-09-06 12:43:45"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": true,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}

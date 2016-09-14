@@ -1,0 +1,64 @@
+<?php namespace Foothing\Kpi\Repositories;
+
+use Foothing\Kpi\Calculator\Variable;
+use Foothing\Kpi\Config\ConfigInterface;
+use Foothing\Kpi\Models\MeasurableInterface;
+
+class DatasetsManager {
+
+    protected $cache = [];
+
+    /**
+     * @var DatasetRepositoryInterface
+     */
+    protected $datasets;
+
+    /**
+     * @var \Foothing\Kpi\Config\ConfigInterface
+     */
+    protected $config;
+
+    public function __construct(DatasetRepositoryInterface $datasets, ConfigInterface $config) {
+        $this->datasets = $datasets;
+        $this->config = $config;
+    }
+
+    public function getData(MeasurableInterface $measurable, Variable $variable) {
+        // $key = AUTO_RC
+        // $time = 2015,09,16,0,0 - year, month, day, week of month, week of year
+        // $type = "to date" | "realtime"
+
+        $key = $variable->name;
+        $time = $variable->time;
+        $type = $variable->type;
+
+        // @TODO add optional data-mapping.
+        // For example, data AUTO_RC might be in a certain table column
+        // and should be pointed.
+        // The actual implementation expects data to be in a single
+        // table instead.
+
+        if ($cached = $this->cacheGet($key, $time, $measurable->getId())) {
+            return $cached;
+        }
+
+        // Assmuning
+        $data = $this->datasets->findByTime($variable);
+
+        // Cache all $key | $time values, then return the one
+        // for the requested measurable entity.
+        foreach ($data as $row) {
+            $this->cacheSet($key, $row);
+        }
+
+        return $this->cacheGet($key, $time, $measurable->getId());
+    }
+
+    protected function cacheSet($key, $data) {
+        return $this->cache[$key][ $data->getDate() ][ $data->getMeasurableId() ] = $data;
+    }
+
+    protected function cacheGet($key, $time, $measurableId) {
+        return $this->cache[$key][$time][$measurableId];
+    }
+}
