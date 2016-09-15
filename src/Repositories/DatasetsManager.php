@@ -2,6 +2,7 @@
 
 use Foothing\Kpi\Calculator\Variable;
 use Foothing\Kpi\Config\ConfigInterface;
+use Foothing\Kpi\Models\DataInterface;
 use Foothing\Kpi\Models\MeasurableInterface;
 
 class DatasetsManager {
@@ -29,7 +30,7 @@ class DatasetsManager {
         // $type = "to date" | "realtime"
 
         $key = $variable->name;
-        $time = $variable->time;
+        //$time = $variable->time;
         $type = $variable->type;
 
         // @TODO add optional data-mapping.
@@ -38,7 +39,7 @@ class DatasetsManager {
         // The actual implementation expects data to be in a single
         // table instead.
 
-        if ($cached = $this->cacheGet($key, $time, $measurable->getId())) {
+        if ($cached = $this->cacheGet($variable, $measurable->getId())) {
             return $cached;
         }
 
@@ -48,17 +49,30 @@ class DatasetsManager {
         // Cache all $key | $time values, then return the one
         // for the requested measurable entity.
         foreach ($data as $row) {
-            $this->cacheSet($key, $row);
+            $this->cacheSet($variable, $row);
+        }
+//var_dump($this->cache);
+        return $this->cacheGet($variable, $measurable->getId());
+    }
+
+    protected function cacheSet(Variable $variable, DataInterface $data) {
+
+        return $this->cache[$variable->name][ $variable->getTimeString() ][ $data->getMeasurableId() ] = $data->getValue($variable->name);
+    }
+
+    protected function cacheGet(Variable $variable, $measurableId) {
+        print $variable->getTimeString() . "<br>";
+        if (! $this->cacheHas($variable, $measurableId)) {
+            return null;
         }
 
-        return $this->cacheGet($key, $time, $measurable->getId());
+        return $this->cache[$variable->name][ $variable->getTimeString() ][$measurableId];
     }
 
-    protected function cacheSet($key, $data) {
-        return $this->cache[$key][ $data->getDate() ][ $data->getMeasurableId() ] = $data;
-    }
-
-    protected function cacheGet($key, $time, $measurableId) {
-        return $this->cache[$key][$time][$measurableId];
+    protected function cacheHas(Variable $variable, $measurableId) {
+        return
+            isset($this->cache[ $variable->name ])
+            && isset($this->cache[ $variable->name ][ $variable->getTimeString() ])
+            && isset($this->cache[ $variable->name ][ $variable->getTimeString() ][ $measurableId ]);
     }
 }

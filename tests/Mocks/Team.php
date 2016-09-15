@@ -4,4 +4,8 @@ use Foothing\Kpi\Models\MeasurableInterface;
 
 class Team implements MeasurableInterface {
 
+    public function getId() {
+        return 1;
+    }
+
 }

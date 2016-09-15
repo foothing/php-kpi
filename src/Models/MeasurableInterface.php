@@ -2,6 +2,6 @@
 
 interface MeasurableInterface {
 
-
+    public function getId();
 
 }
