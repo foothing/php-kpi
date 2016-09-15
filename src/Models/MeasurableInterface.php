@@ -3,5 +3,6 @@
 interface MeasurableInterface {
 
     public function getId();
+    public function getName();
 
 }

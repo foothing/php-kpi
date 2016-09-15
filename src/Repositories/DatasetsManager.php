@@ -56,7 +56,7 @@ class DatasetsManager {
     }
 
     protected function cacheSet(Variable $variable, DataInterface $data) {
-
+        //print "cache set $variable->name for " . $data->getMeasurableId() . "<br>";
         return $this->cache[$variable->name][ $variable->getTimeString() ][ $data->getMeasurableId() ] = $data->getValue($variable->name);
     }
 

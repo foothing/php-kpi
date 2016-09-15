@@ -55,15 +55,21 @@ class Manager {
         // Fetch all measurable entities.
         $measurables = $this->measurables->all();
 
+        $debug = [];
+
         foreach($measurables as $measurable) {
 
             foreach ($kpis as $kpi) {
                 // Compute each kpi's value and cache.
                 $value = $this->compute($kpi->getFormula(), $measurable);
+
+                $debug[] = ['kpi' => $kpi, 'measurable' => $measurable, 'value' => $value];
 //print "$kpi->name $measurable->id $value | $kpi->formula<br>";
                 //$this->kpis->store($kpi, $value);
             }
         }
+
+        return $debug;
     }
 
     public function compute($formula, MeasurableInterface $measurable) {
@@ -72,7 +78,7 @@ class Manager {
 
         // Get variable values.
         foreach ($variables as $variable) {
-            $variable->value = $this->datasets->getData($measurable, $variable);
+            $variable->value = $this->datasets->getData($measurable, $variable) ?: 0;
         }
 
         // Set parameters and compute formula.

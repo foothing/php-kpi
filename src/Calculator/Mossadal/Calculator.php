@@ -2,6 +2,8 @@
 
 use Foothing\Kpi\Calculator\CalculatorInterface;
 use Foothing\Kpi\Calculator\FormulaParser;
+use MathParser\Exceptions\DivisionByZeroException;
+use MathParser\Exceptions\SyntaxErrorException;
 use MathParser\Interpreting\Evaluator;
 use MathParser\StdMathParser;
 
@@ -27,7 +29,14 @@ class Calculator implements CalculatorInterface {
         // Plug and execute math parser.
         $parser = new StdMathParser();
         $evaluator = new Evaluator();
-        $parsed = $parser->parse($compiled);
-        return $parsed->accept($evaluator);
+
+        try {
+            $parsed = $parser->parse($compiled);
+            return $parsed->accept($evaluator);
+        } catch (SyntaxErrorException $ex) {
+            throw new \Exception("$formula | $compiled has syntax error.");
+        } catch (DivisionByZeroException $ex) {
+            throw new \Exception("$formula | $compiled division by zero.");
+        }
     }
 }
