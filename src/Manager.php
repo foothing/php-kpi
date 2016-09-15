@@ -60,7 +60,7 @@ class Manager {
             foreach ($kpis as $kpi) {
                 // Compute each kpi's value and cache.
                 $value = $this->compute($kpi->getFormula(), $measurable);
-print "$kpi->name $value<br>";
+//print "$kpi->name $measurable->id $value | $kpi->formula<br>";
                 //$this->kpis->store($kpi, $value);
             }
         }

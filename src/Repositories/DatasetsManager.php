@@ -45,7 +45,7 @@ class DatasetsManager {
 
         // Assmuning
         $data = $this->datasets->findByTime($variable);
-
+//dd($data);
         // Cache all $key | $time values, then return the one
         // for the requested measurable entity.
         foreach ($data as $row) {
@@ -61,7 +61,6 @@ class DatasetsManager {
     }
 
     protected function cacheGet(Variable $variable, $measurableId) {
-        print $variable->getTimeString() . "<br>";
         if (! $this->cacheHas($variable, $measurableId)) {
             return null;
         }

@@ -21,9 +21,9 @@ class FormulaParserTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testParse_single_variable() {
-        $formula = "{AUTO_RC(2015,09,12,0,0,TD)}";
+        $formula = "{AUTO_RC(TD,2015,09,12,0,0)}";
         $variable = $this->parser->parse($formula)[0];
-        $this->assertEquals("{AUTO_RC(2015,09,12,0,0,TD)}", $variable->raw);
+        $this->assertEquals("{AUTO_RC(TD,2015,09,12,0,0)}", $variable->raw);
         $this->assertEquals("AUTO_RC", $variable->name);
         $this->assertEquals(2015, $variable->year);
         $this->assertEquals("09", $variable->month);
@@ -34,7 +34,7 @@ class FormulaParserTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testParse_real_world_example() {
-        $formula = "{AUTO_RC(CUR,09,12,0,0,TD)} / {AUTO_RC(PREV,09,12,0,0,TD)}";
+        $formula = "{AUTO_RC(TD,CUR,09,12,0,0)} / {AUTO_RC(TD,PREV,09,12,0,0)}";
         $variables = $this->parser->parse($formula);
         $this->assertEquals("AUTO_RC", $variables[0]->name);
         $this->assertEquals(date('Y'), $variables[0]->year);
@@ -53,14 +53,14 @@ class FormulaParserTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function test_compile() {
-        $formula = "{AUTO_RC(CUR,09,12,0,0,TD)} / {AUTO_RC(PREV,09,12,0,0,TD)}";
+        $formula = "{AUTO_RC(TD,CUR,09,12,0,0)} / {AUTO_RC(TD,PREV,09,12,0,0)}";
 
         $variables0 = new Variable();
-        $variables0->raw = "{AUTO_RC(CUR,09,12,0,0,TD)}";
+        $variables0->raw = "{AUTO_RC(TD,CUR,09,12,0,0)}";
         $variables0->value = 100;
 
         $variables1 = new Variable();
-        $variables1->raw = "{AUTO_RC(PREV,09,12,0,0,TD)}";
+        $variables1->raw = "{AUTO_RC(TD,PREV,09,12,0,0)}";
         $variables1->value = 0.5;
 
         $compiled = $this->parser->compile($formula, [$variables0, $variables1]);
