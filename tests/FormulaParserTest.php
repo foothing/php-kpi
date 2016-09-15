@@ -41,15 +41,75 @@ class FormulaParserTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals("09", $variables[0]->month);
         $this->assertEquals("12", $variables[0]->day);
         $this->assertEquals("0", $variables[0]->weekOfYear);
-        $this->assertEquals("0", $variables[0]->weekOfYear);
+        $this->assertEquals("0", $variables[0]->weekOfMonth);
         $this->assertEquals(Variable::$TODATE, $variables[0]->type);
         $this->assertEquals("AUTO_RC", $variables[1]->name);
         $this->assertEquals(date('Y') - 1, $variables[1]->year);
         $this->assertEquals("09", $variables[1]->month);
         $this->assertEquals("12", $variables[1]->day);
         $this->assertEquals("0", $variables[1]->weekOfYear);
-        $this->assertEquals("0", $variables[1]->weekOfYear);
+        $this->assertEquals("0", $variables[1]->weekOfMonth);
         $this->assertEquals(Variable::$TODATE, $variables[1]->type);
+    }
+
+    public function testParse_full_date() {
+        $formula = "{AUTO_RC(TD,CUR,09,12,0,0)}";
+        $variables = $this->parser->parse($formula);
+        $this->assertEquals("AUTO_RC", $variables[0]->name);
+        $this->assertEquals(date('Y'), $variables[0]->year);
+        $this->assertEquals("09", $variables[0]->month);
+        $this->assertEquals("12", $variables[0]->day);
+        $this->assertEquals("0", $variables[0]->weekOfYear);
+        $this->assertEquals("0", $variables[0]->weekOfMonth);
+        $this->assertEquals(Variable::$TODATE, $variables[0]->type);
+    }
+
+    public function testParse_no_week_of_month() {
+        $formula = "{AUTO_RC(TD,CUR,09,12,0)}";
+        $variables = $this->parser->parse($formula);
+        $this->assertEquals("AUTO_RC", $variables[0]->name);
+        $this->assertEquals(date('Y'), $variables[0]->year);
+        $this->assertEquals("09", $variables[0]->month);
+        $this->assertEquals("12", $variables[0]->day);
+        $this->assertEquals("0", $variables[0]->weekOfYear);
+        $this->assertEmpty($variables[0]->weekOfMonth);
+        $this->assertEquals(Variable::$TODATE, $variables[0]->type);
+    }
+
+    public function testParse_no_week_of_year() {
+        $formula = "{AUTO_RC(TD,CUR,09,12)}";
+        $variables = $this->parser->parse($formula);
+        $this->assertEquals("AUTO_RC", $variables[0]->name);
+        $this->assertEquals(date('Y'), $variables[0]->year);
+        $this->assertEquals("09", $variables[0]->month);
+        $this->assertEquals("12", $variables[0]->day);
+        $this->assertEmpty($variables[0]->weekOfYear);
+        $this->assertEmpty($variables[0]->weekOfMonth);
+        $this->assertEquals(Variable::$TODATE, $variables[0]->type);
+    }
+
+    public function testParse_no_day() {
+        $formula = "{AUTO_RC(TD,CUR,09)}";
+        $variables = $this->parser->parse($formula);
+        $this->assertEquals("AUTO_RC", $variables[0]->name);
+        $this->assertEquals(date('Y'), $variables[0]->year);
+        $this->assertEquals("09", $variables[0]->month);
+        $this->assertEmpty($variables[0]->day);
+        $this->assertEmpty($variables[0]->weekOfYear);
+        $this->assertEmpty($variables[0]->weekOfMonth);
+        $this->assertEquals(Variable::$TODATE, $variables[0]->type);
+    }
+
+    public function testParse_no_month() {
+        $formula = "{AUTO_RC(TD,CUR)}";
+        $variables = $this->parser->parse($formula);
+        $this->assertEquals("AUTO_RC", $variables[0]->name);
+        $this->assertEquals(date('Y'), $variables[0]->year);
+        $this->assertEmpty($variables[0]->month);
+        $this->assertEmpty($variables[0]->day);
+        $this->assertEmpty($variables[0]->weekOfYear);
+        $this->assertEmpty($variables[0]->weekOfMonth);
+        $this->assertEquals(Variable::$TODATE, $variables[0]->type);
     }
 
     public function test_compile() {
