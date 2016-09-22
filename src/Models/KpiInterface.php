@@ -7,7 +7,4 @@ interface KpiInterface {
     public function getFormula();
     public function getThresholds();
 
-    // @TODO move in trait?
-    public function quantizeValue($value);
-
 }

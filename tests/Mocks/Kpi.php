@@ -24,7 +24,19 @@ class Kpi implements KpiInterface {
         return $this->formula;
     }
 
-    public function quantizeValue($value) {
-        // TODO: Implement quantizeValue() method.
+    public function getThresholds() {
+        // TODO: Implement getThresholds() method.
+    }
+
+    public function quantizeTransientValue() {
+        // TODO: Implement quantizeTransientValue() method.
+    }
+
+    public function setTransientValue($value) {
+        $this->value = $value;
+    }
+
+    public function getTransientValue() {
+        return $this->value;
     }
 }

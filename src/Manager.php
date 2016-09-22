@@ -1,5 +1,7 @@
 <?php namespace Foothing\Kpi;
 
+use Foothing\Kpi\Aggregator\AggregatorManager;
+use Foothing\Kpi\Cache\KpiCache;
 use Foothing\Kpi\Calculator\CalculatorInterface;
 use Foothing\Kpi\Calculator\FormulaParser;
 use Foothing\Kpi\Models\MeasurableInterface;
@@ -34,18 +36,32 @@ class Manager {
      */
     protected $calculator;
 
+    /**
+     * @var Cache\KpiCache
+     */
+    protected $cache;
+
+    /**
+     * @var Aggregator\AggregatorManager
+     */
+    protected $aggregatorManager;
+
     public function __construct(
         FormulaParser $parser,
         DatasetsManager $datasets,
         KpiRepositoryInterface $kpis,
         MeasurableRepositoryInterface $measurables,
-        CalculatorInterface $calculator) {
+        CalculatorInterface $calculator,
+        KpiCache $cache,
+        AggregatorManager $aggregatorManager) {
 
         $this->parser = $parser;
         $this->datasets = $datasets;
         $this->kpis = $kpis;
         $this->measurables = $measurables;
         $this->calculator = $calculator;
+        $this->cache = $cache;
+        $this->aggregatorManager = $aggregatorManager;
     }
 
     public function refresh() {
@@ -57,17 +73,22 @@ class Manager {
 
         $debug = [];
 
+        // Evaluate kpis for each measurable.
         foreach($measurables as $measurable) {
 
+            // Cycle kpis.
             foreach ($kpis as $kpi) {
                 // Compute each kpi's value and cache.
                 $value = $this->compute($kpi->getFormula(), $measurable);
 
                 $debug[] = ['kpi' => $kpi, 'measurable' => $measurable, 'value' => $value];
 //print "$kpi->name $measurable->id $value | $kpi->formula<br>";
-                //$this->kpis->store($kpi, $value);
+
+                $this->cache->put($kpi, $measurable, $value);
             }
         }
+
+        $this->aggregatorManager->rebuild($this->cache);
 
         return $debug;
     }

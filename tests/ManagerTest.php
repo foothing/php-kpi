@@ -2,12 +2,13 @@
 
 use Foothing\Kpi\Calculator\Variable;
 use Foothing\Kpi\Manager;
+use Foothing\Kpi\Tests\Mocks\Factory;
 use Foothing\Kpi\Tests\Mocks\Kpi;
 use Foothing\Kpi\Tests\Mocks\Team;
 
 class ManagerTest extends \PHPUnit_Framework_TestCase {
 
-    protected $manager, $kpis, $measurables, $parser, $datasets, $calculator;
+    protected $manager, $kpis, $measurables, $parser, $datasets, $calculator, $kpiCache, $aggregatorManager;
 
     public function setUp() {
         $this->kpis = \Mockery::mock("Foothing\Kpi\Repositories\KpiRepositoryInterface");
@@ -15,16 +16,34 @@ class ManagerTest extends \PHPUnit_Framework_TestCase {
         $this->parser = \Mockery::mock("Foothing\Kpi\Calculator\FormulaParser");
         $this->datasets = \Mockery::mock("Foothing\Kpi\Repositories\DatasetsManager");
         $this->calculator = \Mockery::mock("Foothing\Kpi\Calculator\CalculatorInterface");
-        $this->manager = new Manager($this->parser, $this->datasets, $this->kpis, $this->measurables, $this->calculator);
+        $this->kpiCache = \Mockery::mock("Foothing\Kpi\Cache\KpiCache");
+        $this->aggregatorManager = \Mockery::mock("Foothing\Kpi\Aggregator\AggregatorManager");
+        $this->manager = new Manager(
+            $this->parser,
+            $this->datasets,
+            $this->kpis,
+            $this->measurables,
+            $this->calculator,
+            $this->kpiCache,
+            $this->aggregatorManager);
     }
 
     public function testRefresh() {
-        $manager = \Mockery::mock("Foothing\Kpi\Manager[compute]", [$this->parser, $this->datasets, $this->kpis, $this->measurables, $this->calculator]);
+        $manager = \Mockery::mock("Foothing\Kpi\Manager[compute]", [
+            $this->parser,
+            $this->datasets,
+            $this->kpis,
+            $this->measurables,
+            $this->calculator,
+            $this->kpiCache,
+            $this->aggregatorManager]);
 
         $this->kpis->shouldReceive('all')->once()->andReturn($this->kpis());
         $this->measurables->shouldReceive('all')->once()->andReturn($this->measurables());
 
         $manager->shouldReceive('compute')->times(10)->andReturnNull();
+        $this->kpiCache->shouldReceive('put')->times(10);
+        $this->aggregatorManager->shouldReceive('rebuild')->once();
 
         $manager->refresh();
     }
@@ -59,19 +78,13 @@ class ManagerTest extends \PHPUnit_Framework_TestCase {
     }
 
     protected function kpis() {
-        return [
-            new Kpi(1, "KPI1", "1+1"),
-            new Kpi(2, "KPI2", "1+2"),
-            new Kpi(3, "KPI3", "1+3"),
-            new Kpi(4, "KPI4", "1+4"),
-            new Kpi(5, "KPI5", "1+5"),
-        ];
+        return Factory::kpis();
     }
 
     protected function measurables() {
         return [
-            new Team(),
-            new Team()
+            new Team(1),
+            new Team(2)
         ];
     }
 
