@@ -24,48 +24,65 @@ class AggregatorManager {
      *
      * @param KpiCache $cache
      *
-     * @throws Exceptions\KpiNotFoundException
      * @throws Exceptions\AggregatorConfigNotFoundException
+     * @throws \Exception
      */
     public function rebuild(KpiCache $cache) {
-        // Note: each entry is instance of AggregatorConfigInterface.
+        /* var $config Foothing\Kpi\Models\AggregatorConfigCollection */
         $config = $this->aggregators->getConfig();
 
         if (! $config) {
             throw new AggregatorConfigNotFoundException();
         }
 
-        foreach ($config as $configValue) {
-            /* @var $configValue \Foothing\Kpi\Models\AggregatorConfigInterface */
+        // Kpi for each measurable.
+        $measurables = $cache->all();
 
-            // Kpi for each measurable.
-            $measurables = $cache->get($configValue->getAggregatorKpiId());
-dd($measurables);
-            if (! $measurables) {
-                throw new KpiNotFoundException("Kpi " . $configValue->getAggregatorKpiId() . " not found in cache.");
-            }
+        if (! $measurables) {
+            throw new \Exception("rename cache exception");
+        }
 
+        // Begin the iterations, for each configured aggregator.
+        foreach ($config->items() as $configValue) {
+            /* @var $configValue \Foothing\Kpi\Models\TransientAggregatorConfig */
+
+            // Cycle all measurables. Note that each measurable
+            // is being get from kpi cache, so it will be
+            // present only if it has associated kpis.
             foreach ($measurables as $measurableId => $kpis) {
                 $balancedValues = [];
 
+                // @TODO
+                // error if kpis don't match expectations, or not found.
+
+                // Now cycle only the signifiative kpis and balance them.
                 foreach ($kpis as $kpi) {
                     /* @var $kpi TransientKpi */
 
-                    // The kpi value, in quantized scale.
-                    $quantized = $kpi->quantizeTransientValue();
+                    // Skip if current config doesn't have $kpi.
+                    if (! $configValue->has($kpi->getKpi()->getId())) {
+                        continue;
+                    }
 
                     // The balanced kpi value for this aggregator.
-                    $balancedValues[] = $quantized * $configValue->getAggregatorKpiWeight();
+                    $balancedValues[] = $kpi->quantizeTransientValue() * $configValue->get($kpi->getKpi()->getId());
+
+                    // Store aggregated value.
+                    $this->aggregators->store($configValue, $measurableId, $kpi);
                 }
 
-                // Store the value.
-                $this->aggregators->store($configValue, $measurableId, $kpi, $this->getBalancedAggregate($balancedValues));
+                // Store the global balanced value.
+                $this->aggregators->storeBalancedAggregate($configValue, $measurableId, $kpi, $this->getBalancedAggregate($balancedValues));
             }
         }
     }
 
     public function getBalancedAggregate(array $balancedValues) {
         return array_sum($balancedValues) / count($balancedValues);
+    }
+
+    public function clearCache() {
+        $this->aggregators->clearCache();
     }
 
     public function addKpi(AggregatorConfigInterface $config, KpiInterface $kpi, $weight) {

@@ -6,10 +6,9 @@ class AggregatorConfig implements AggregatorConfigInterface {
 
     protected $id, $kpi, $weight;
 
-    public function __construct($id, $kpi, $weight) {
+    public function __construct($id, $kpi) {
         $this->id = $id;
         $this->kpi = $kpi;
-        $this->weight = $weight;
     }
 
     public function getAggregatorId() {

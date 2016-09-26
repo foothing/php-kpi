@@ -9,11 +9,15 @@ class KpiCache {
     protected $cache = [];
 
     public function put(KpiInterface $kpi, MeasurableInterface $measurable, $value) {
-        $this->cache[ $kpi->getId() ][ $measurable->getId() ][] = new TransientKpi($kpi, $value);
+        $this->cache[ $measurable->getId() ][ $kpi->getId() ] = new TransientKpi($kpi, $value);
     }
 
-    public function get($kpiId) {
-        return isset($this->cache[$kpiId]) ? $this->cache[$kpiId] : null;
+    public function get($measurableId, $kpiId) {
+        return isset($this->cache[$measurableId]) ? $this->cache[$measurableId][$kpiId] : null;
+    }
+
+    public function all() {
+        return $this->cache;
     }
 
     public function flush() {

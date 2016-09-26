@@ -4,12 +4,13 @@ use Foothing\Kpi\Models\KpiInterface;
 
 class Kpi implements KpiInterface {
 
-    protected $id, $name, $formula, $value;
+    protected $id, $name, $formula, $value, $thresholds;
 
-    public function __construct($id, $name, $formula) {
+    public function __construct($id, $name, $formula, $thresholds = []) {
         $this->id = $id;
         $this->name = $name;
         $this->formula = $formula;
+        $this->thresholds = $thresholds;
     }
 
     public function getId() {
@@ -25,7 +26,7 @@ class Kpi implements KpiInterface {
     }
 
     public function getThresholds() {
-        // TODO: Implement getThresholds() method.
+        return $this->thresholds;
     }
 
     public function quantizeTransientValue() {

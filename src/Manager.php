@@ -65,6 +65,9 @@ class Manager {
     }
 
     public function refresh() {
+        // Cleanup.
+        $this->aggregatorManager->clearCache();
+
         // Fetch all configured kpis.
         $kpis = $this->kpis->all();
 

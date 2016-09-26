@@ -4,7 +4,7 @@ use Foothing\Kpi\Models\MeasurableInterface;
 
 class Team implements MeasurableInterface {
 
-    protected $id;
+    public $id;
 
     public function __construct($id) {
         $this->id = $id;

@@ -20,7 +20,7 @@ class AggregatorManagerTest extends \PHPUnit_Framework_TestCase {
         $this->manager = new AggregatorManager($this->aggregators);
     }
 
-    public function _test_rebuild_fails_if_config_is_empty() {
+    public function test_rebuild_fails_if_config_is_empty() {
         $this->aggregators->shouldReceive('getConfig')->once()->andReturnNull();
         $this->setExpectedException("Foothing\Kpi\Aggregator\Exceptions\AggregatorConfigNotFoundException");
         $this->manager->rebuild($this->cache);
@@ -37,16 +37,18 @@ class AggregatorManagerTest extends \PHPUnit_Framework_TestCase {
         $config = $this->config();
         $kpis = Factory::kpisFromCache();
 
+        // Get the aggregators configuration.
         $this->aggregators->shouldReceive('getConfig')->once()->andReturn($config);
 
-        $this->cache->shouldReceive('get')->once()->with(101)->andReturn($kpis);
-        $this->aggregators->shouldReceive('store')->once();
+        // Get the kpi cache.
+        $this->cache->shouldReceive('all')->andReturn($kpis);
 
-        $this->cache->shouldReceive('get')->once()->with(102)->andReturn($kpis);
-        $this->aggregators->shouldReceive('store')->once();
+        // Num configured kpis X num measurables.
+        $this->aggregators->shouldReceive('store')->times(8);
 
-        $this->cache->shouldReceive('get')->once()->with(103)->andReturn($kpis);
-        $this->aggregators->shouldReceive('store')->once();
+        // Num aggregators X measurables.
+        $this->aggregators->shouldReceive('storeBalancedAggregate')->times(6);
+
         $this->manager->rebuild($this->cache);
     }
 
@@ -57,11 +59,7 @@ class AggregatorManagerTest extends \PHPUnit_Framework_TestCase {
     }
 
     protected function config() {
-        return [
-            new AggregatorConfig(1, 101, 1),
-            new AggregatorConfig(2, 102, 1),
-            new AggregatorConfig(3, 103, 0.5),
-        ];
+        return Factory::configs();
     }
 
     public function tearDown() {

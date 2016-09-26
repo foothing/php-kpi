@@ -4,7 +4,10 @@ use Foothing\Kpi\Models\Traits\QuantizeValues;
 
 class TransientKpi {
 
-    use QuantizeValues;
+    /**
+     * @var KpiInterface
+     */
+    protected $kpi;
 
     /**
      * @var float
@@ -12,9 +15,14 @@ class TransientKpi {
     protected $value;
 
     /**
-     * @var KpiInterface
+     * @var float
      */
-    protected $kpi;
+    protected $quantizedValue;
+
+    /**
+     * @var float
+     */
+    protected $balancedValue;
 
     public function __construct(KpiInterface $kpi, $value) {
         $this->setKpi($kpi);
@@ -37,7 +45,29 @@ class TransientKpi {
         return $this->value;
     }
 
-    public function getThresholds() {
-        return $this->kpi->getThresholds();
+    public function quantizeTransientValue() {
+        $thresholds = $this->kpi->getThresholds();
+
+        for ($i = 0; $i < count($thresholds); $i++) {
+            $threshold = (float)$thresholds[$i];
+
+            if ($this->getTransientValue() < $threshold) {
+                return $i;
+            }
+        }
+
+        return $this->quantizedValue = $i;
+    }
+
+    public function getQuantizedValue() {
+        return $this->quantizedValue;
+    }
+
+    public function setBalancedValue($balancedValue) {
+        $this->balancedValue = $balancedValue;
+    }
+
+    public function getBalancedValue() {
+        return $this->balancedValue;
     }
 }
