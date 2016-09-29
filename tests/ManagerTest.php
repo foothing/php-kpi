@@ -38,6 +38,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase {
             $this->kpiCache,
             $this->aggregatorManager]);
 
+        $this->aggregatorManager->shouldReceive('clearCache')->once();
         $this->kpis->shouldReceive('all')->once()->andReturn($this->kpis());
         $this->measurables->shouldReceive('all')->once()->andReturn($this->measurables());
 

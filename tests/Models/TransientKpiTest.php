@@ -26,5 +26,8 @@ class TransientKpiTest extends \PHPUnit_Framework_TestCase {
 
         $transient = new TransientKpi(new Kpi(100, "foo", "1+1", [1, 2, 3]), 100);
         $this->assertEquals(3, $transient->quantizeTransientValue());
+
+        $transient = new TransientKpi(new Kpi(100, "foo", "1+1", [-0.3,-0.201,-0.101,-0.031,0.03,0.2]), 0.25);
+        $this->assertEquals(6, $transient->quantizeTransientValue());
     }
 }

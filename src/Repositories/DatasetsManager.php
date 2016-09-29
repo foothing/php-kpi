@@ -43,7 +43,7 @@ class DatasetsManager {
             return $cached;
         }
 
-        // Assmuning
+        // Assuming
         $data = $this->datasets->findByTime($variable);
 //dd($data);
         // Cache all $key | $time values, then return the one

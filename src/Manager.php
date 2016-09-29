@@ -83,7 +83,7 @@ class Manager {
             foreach ($kpis as $kpi) {
                 // Compute each kpi's value and cache.
                 $value = $this->compute($kpi->getFormula(), $measurable);
-
+//\Log::debug($kpi->getName() . " " . $measurable->getName() . " " .  $value);
                 $debug[] = ['kpi' => $kpi, 'measurable' => $measurable, 'value' => $value];
 //print "$kpi->name $measurable->id $value | $kpi->formula<br>";
 

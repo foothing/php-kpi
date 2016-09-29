@@ -1,8 +1,10 @@
 <?php namespace Foothing\Kpi\Tests\Aggregator;
 
 use Foothing\Kpi\Aggregator\AggregatorManager;
+use Foothing\Kpi\Models\TransientKpi;
 use Foothing\Kpi\Tests\Mocks\AggregatorConfig;
 use Foothing\Kpi\Tests\Mocks\Factory;
+use Foothing\Kpi\Tests\Mocks\Kpi;
 
 class AggregatorManagerTest extends \PHPUnit_Framework_TestCase {
 
@@ -54,8 +56,35 @@ class AggregatorManagerTest extends \PHPUnit_Framework_TestCase {
 
     public function test_balanced_aggregate() {
         $balancedValues = [7, 9, 0, 0.5];
-        $expectd = (7 + 9 + 0 + 0.5) / 4;
-        $this->assertEquals($expectd, $this->manager->getBalancedAggregate($balancedValues));
+        $expected = 4; //round((7 + 9 + 0 + 0.5) / 4);
+        $this->assertEquals($expected, $this->manager->getBalancedAggregate($balancedValues));
+    }
+
+    public function test_quantized_value() {
+        $kpi = new Kpi(1, "foo", "1+1", [-1, 0, 1]);
+        $transientKpi = new TransientKpi($kpi, 10);
+
+        $this->assertEquals(0, $this->manager->getQuantizedValue($transientKpi, -2));
+        $this->assertEquals(1, $this->manager->getQuantizedValue($transientKpi, -1));
+        $this->assertEquals(1, $this->manager->getQuantizedValue($transientKpi, -0.9));
+        $this->assertEquals(2, $this->manager->getQuantizedValue($transientKpi, 0));
+        $this->assertEquals(2, $this->manager->getQuantizedValue($transientKpi, 0.1));
+        $this->assertEquals(3, $this->manager->getQuantizedValue($transientKpi, 1));
+        $this->assertEquals(3, $this->manager->getQuantizedValue($transientKpi, 1.1));
+    }
+
+    public function test_balanced_value() {
+        $kpi = new Kpi(1, "foo", "1+1", [-1, 0, 1]);
+        $transientKpi = new TransientKpi($kpi, 10);
+        $this->assertEquals(0, $this->manager->getBalancedValue($transientKpi, 0));
+        $this->assertEquals(10, $this->manager->getBalancedValue($transientKpi, 1));
+        $this->assertEquals(5, $this->manager->getBalancedValue($transientKpi, 0.5));
+        $this->assertEquals(10*0.7, $this->manager->getBalancedValue($transientKpi, 0.7));
+    }
+
+    public function test_clear_cache() {
+        $this->aggregators->shouldReceive('clearCache')->once();
+        $this->manager->clearCache();
     }
 
     protected function config() {

@@ -20,10 +20,11 @@ interface AggregatorRepositoryInterface {
      *
      * @param                           $measurableId
      * @param TransientKpi              $kpi
+     * @param float                     $balancedValue
      *
      * @return mixed
      */
-    public function store(TransientAggregatorConfig $config, $measurableId, TransientKpi $kpi);
+    public function store(TransientAggregatorConfig $config, $measurableId, TransientKpi $kpi, $balancedValue);
 
     public function storeBalancedAggregate(TransientAggregatorConfig $config, $measurableId, TransientKpi $kpi, $balancedAggregate);
 
