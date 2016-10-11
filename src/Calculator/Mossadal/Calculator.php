@@ -18,7 +18,7 @@ class Calculator implements CalculatorInterface {
         $this->parser = $parser;
     }
 
-    public function execute($formula, array $variables = null) {
+    public function execute($formula, array $variables = null, &$compiled = null) {
         // Compile formula replacing variables.
         if ($variables) {
             $compiled = $this->parser->compile($formula, $variables);
@@ -32,6 +32,7 @@ class Calculator implements CalculatorInterface {
 
         try {
             $parsed = $parser->parse($compiled);
+            \Log::debug("$formula / $compiled / $parsed");
             return $parsed->accept($evaluator);
         } catch (SyntaxErrorException $ex) {
             throw new \Exception("$formula | $compiled has syntax error.");

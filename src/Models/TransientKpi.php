@@ -48,7 +48,7 @@ class TransientKpi {
     public function quantizeTransientValue() {
         $thresholds = $this->kpi->getThresholds();
 
-        for ($i = 0; $i < count($thresholds); $i++) {
+        for ($i = 1; $i <= count($thresholds); $i++) {
             $threshold = (float)$thresholds[$i];
 
             if ($this->getTransientValue() < $threshold) {

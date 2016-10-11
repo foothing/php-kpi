@@ -8,6 +8,7 @@ use Foothing\Kpi\Models\MeasurableInterface;
 use Foothing\Kpi\Repositories\DatasetsManager;
 use Foothing\Kpi\Repositories\KpiRepositoryInterface;
 use Foothing\Kpi\Repositories\MeasurableRepositoryInterface;
+use MathParser\Exceptions\DivisionByZeroException;
 
 class Manager {
 
@@ -81,10 +82,13 @@ class Manager {
 
             // Cycle kpis.
             foreach ($kpis as $kpi) {
+                $compiled = "";
+
                 // Compute each kpi's value and cache.
-                $value = $this->compute($kpi->getFormula(), $measurable);
+                $value = $this->compute($kpi->getFormula(), $measurable, $compiled);
+
 //\Log::debug($kpi->getName() . " " . $measurable->getName() . " " .  $value);
-                $debug[] = ['kpi' => $kpi, 'measurable' => $measurable, 'value' => $value];
+                $debug[] = ['kpi' => $kpi, 'measurable' => $measurable, 'compiled' => $compiled, 'value' => $value];
 //print "$kpi->name $measurable->id $value | $kpi->formula<br>";
 
                 $this->cache->put($kpi, $measurable, $value);
@@ -96,7 +100,7 @@ class Manager {
         return $debug;
     }
 
-    public function compute($formula, MeasurableInterface $measurable) {
+    public function compute($formula, MeasurableInterface $measurable, &$compiledFormula = null) {
         // Get all variables from formula.
         $variables = $this->parser->parse($formula);
 
@@ -106,6 +110,15 @@ class Manager {
         }
 
         // Set parameters and compute formula.
-        return $this->calculator->execute($formula, $variables);
+        try {
+            return $this->calculator->execute($formula, $variables, $compiledFormula);
+        } catch (DivisionByZeroException $ex) {
+            \Log::warning("Possible zero value for $measurable->id in $formula");
+            return 0;
+        } catch (\Exception $ex) {
+            \Log::error($ex->getMessage());
+            return 0;
+        }
+
     }
 }

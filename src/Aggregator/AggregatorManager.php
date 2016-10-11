@@ -69,7 +69,7 @@ class AggregatorManager {
 
                     // The quantized value after the balance.
                     $quantizedValue = $this->getQuantizedValue($kpi, $balancedValue);
-                    //\Log::debug("B:" . $kpi->getKpi()->id . "/" . $measurableId . "/" . $kpi->getTransientValue() . "/" . $balancedValue);
+                    //\Log::debug("B:" . $kpi->getKpi()->id . "/" . $measurableId . "/" . $kpi->getTransientValue() . "/" . $balancedValue . "/" . $quantizedValue);
                     //\Log::debug("Q:" . $kpi->getKpi()->id . "/" . $measurableId . "/" . $quantizedValue);
                     $balancedValues[] = $quantizedValue;
 
@@ -93,7 +93,7 @@ class AggregatorManager {
     public function getQuantizedValue(TransientKpi $kpi, $value) {
         $thresholds = $kpi->getKpi()->getThresholds();
 
-        for ($i = 0; $i < count($thresholds); $i++) {
+        for ($i = 1; $i <= count($thresholds); $i++) {
             $threshold = (float)$thresholds[$i];
 
             if ($value < $threshold) {
