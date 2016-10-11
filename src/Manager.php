@@ -113,10 +113,10 @@ class Manager {
         try {
             return $this->calculator->execute($formula, $variables, $compiledFormula);
         } catch (DivisionByZeroException $ex) {
-            \Log::warning("Possible zero value for $measurable->id in $formula");
+            //\Log::warning("Possible zero value for $measurable->id in $formula");
             return 0;
         } catch (\Exception $ex) {
-            \Log::error($ex->getMessage());
+            //\Log::error($ex->getMessage());
             return 0;
         }
 

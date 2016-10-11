@@ -94,7 +94,7 @@ class AggregatorManager {
         $thresholds = $kpi->getKpi()->getThresholds();
 
         for ($i = 1; $i <= count($thresholds); $i++) {
-            $threshold = (float)$thresholds[$i];
+            $threshold = (float)$thresholds[$i - 1];
 
             if ($value < $threshold) {
                 return $i;

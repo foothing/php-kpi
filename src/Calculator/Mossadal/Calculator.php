@@ -32,7 +32,7 @@ class Calculator implements CalculatorInterface {
 
         try {
             $parsed = $parser->parse($compiled);
-            \Log::debug("$formula / $compiled / $parsed");
+            //\Log::debug("$formula / $compiled / $parsed");
             return $parsed->accept($evaluator);
         } catch (SyntaxErrorException $ex) {
             throw new \Exception("$formula | $compiled has syntax error.");

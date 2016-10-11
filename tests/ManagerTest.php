@@ -57,7 +57,7 @@ class ManagerTest extends \PHPUnit_Framework_TestCase {
 
         $this->datasets->shouldReceive('getData')->once()->with($measurable, $variables[0])->andReturn(100);
         $this->datasets->shouldReceive('getData')->once()->with($measurable, $variables[1])->andReturn(200);
-        $this->calculator->shouldReceive('execute')->once()->with("foo bar", $variables)->andReturn(300);
+        $this->calculator->shouldReceive('execute')->once()->with("foo bar", $variables, $foo = 0)->andReturn(300);
 
         $this->manager->compute("foo bar", $measurable);
     }

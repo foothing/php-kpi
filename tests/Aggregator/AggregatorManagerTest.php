@@ -64,13 +64,13 @@ class AggregatorManagerTest extends \PHPUnit_Framework_TestCase {
         $kpi = new Kpi(1, "foo", "1+1", [-1, 0, 1]);
         $transientKpi = new TransientKpi($kpi, 10);
 
-        $this->assertEquals(0, $this->manager->getQuantizedValue($transientKpi, -2));
-        $this->assertEquals(1, $this->manager->getQuantizedValue($transientKpi, -1));
-        $this->assertEquals(1, $this->manager->getQuantizedValue($transientKpi, -0.9));
-        $this->assertEquals(2, $this->manager->getQuantizedValue($transientKpi, 0));
-        $this->assertEquals(2, $this->manager->getQuantizedValue($transientKpi, 0.1));
-        $this->assertEquals(3, $this->manager->getQuantizedValue($transientKpi, 1));
-        $this->assertEquals(3, $this->manager->getQuantizedValue($transientKpi, 1.1));
+        $this->assertEquals(1, $this->manager->getQuantizedValue($transientKpi, -2));
+        $this->assertEquals(2, $this->manager->getQuantizedValue($transientKpi, -1));
+        $this->assertEquals(2, $this->manager->getQuantizedValue($transientKpi, -0.9));
+        $this->assertEquals(3, $this->manager->getQuantizedValue($transientKpi, 0));
+        $this->assertEquals(3, $this->manager->getQuantizedValue($transientKpi, 0.1));
+        $this->assertEquals(4, $this->manager->getQuantizedValue($transientKpi, 1));
+        $this->assertEquals(4, $this->manager->getQuantizedValue($transientKpi, 1.1));
     }
 
     public function test_balanced_value() {
