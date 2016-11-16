@@ -3,31 +3,89 @@
 use Foothing\Kpi\Calculator\FormulaParser;
 use Foothing\Kpi\Calculator\Mossadal\Calculator;
 use Foothing\Kpi\Calculator\Variable;
+use MathParser\Interpreting\Evaluator;
+use MathParser\StdMathParser;
 
 class CalculatorTest extends \PHPUnit_Framework_TestCase {
 
-    public function test_execute_without_variables() {
+    /**
+     * @dataProvider provideFormulas
+     */
+    public function test_execute_without_variables($formula, $result) {
         $calculator = new Calculator(new FormulaParser());
-        $this->assertEquals(0, $calculator->execute("0"));
-        $this->assertEquals(0, $calculator->execute("0+0"));
-        $this->assertEquals(0, $calculator->execute("-1+1"));
-        $this->assertEquals(0, $calculator->execute("0*1"));
-        $this->assertEquals(0, $calculator->execute("0/1"));
+        $this->assertEquals($result, $calculator->execute($formula));
     }
 
-    public function test_execute_with_variables() {
+    public function testa() {
+        $p = new StdMathParser();
+        $c = new Evaluator();
+
+        $parsed = $p->parse("1+a");
+        $c->setVariables(["a" => -1]);
+        $parsed->accept($c);
+    }
+
+    /**
+     * @dataProvider provideValues
+     */
+    public function test_execute_with_variables($formula, $variables, $result) {
         $calculator = new Calculator(new FormulaParser());
+        $this->assertEquals($result, $calculator->execute($formula, $variables));
+    }
 
-        $variables0 = new Variable();
-        $variables0->raw = "{AUTO_RC(CUR,09,12,0,0,TD)}";
-        $variables0->value = 100;
+    /**
+     * @dataProvider provideReplaceVariables
+     */
+    public function test_replace_variables($formula, $variables, $result) {
+        $calculator = new Calculator(new FormulaParser());
+        $this->assertEquals($result, $calculator->replaceVariables($formula, $variables)->formula);
+    }
 
-        $variables1 = new Variable();
-        $variables1->raw = "{AUTO_RC(PREV,09,12,0,0,TD)}";
-        $variables1->value = 0.5;
+    public function provideFormulas() {
+        return [
+            ["0", 0],
+            ["0+0", 0],
+            ["-1+1", 0],
+            ["0*1", 0],
+            ["0/1", 0],
+            ["-1 * 0.4", -0.4],
+            ["+1 -1", 0],
+            ["+1 -1", 0],
+        ];
+    }
 
-        $formula = "$variables0->raw / $variables1->raw * 0.5";
+    public function provideValues() {
+        $variables = [
+            new Variable("{A(CUR,09,12,0,0,TD)}", 1),
+            new Variable("{B(CUR,09,12,0,0,TD)}", -1),
+            new Variable("{C(CUR,09,12,0,0,TD)}", 0),
+            new Variable("{D(CUR,09,12,0,0,TD)}", 0.55),
+        ];
 
-        $this->assertEquals(100/0.5*0.5, $calculator->execute($formula, [$variables0, $variables1]));
+        return [
+            ["0 - 1", $variables, -1],
+            ["{A(CUR,09,12,0,0,TD)} - 1", $variables, 0],
+            ["{A(CUR,09,12,0,0,TD)} - {B(CUR,09,12,0,0,TD)} + 1", $variables, 3],
+            ["{A(CUR,09,12,0,0,TD)} - {C(CUR,09,12,0,0,TD)} + 1", $variables, 2],
+            ["{A(CUR,09,12,0,0,TD)} * {D(CUR,09,12,0,0,TD)} + 1", $variables, 1.55],
+            ["{A(CUR,09,12,0,0,TD)} / {D(CUR,09,12,0,0,TD)} + 1", $variables, 1 / 0.55 + 1],
+        ];
+    }
+
+    public function provideReplaceVariables() {
+        $variables = [
+            new Variable("{A(CUR,09,12,0,0,TD)}", 0),
+            new Variable("{B(CUR,09,12,0,0,TD)}", 0),
+            new Variable("{C(CUR,09,12,0,0,TD)}", 0),
+            new Variable("{D(CUR,09,12,0,0,TD)}", 0),
+            new Variable("{E(CUR,09,12,0,0,TD)}", 0),
+        ];
+
+        return [
+            ["0 - 1", $variables, "0 - 1"],
+            ["{A(CUR,09,12,0,0,TD)} - 1", $variables, "a - 1"],
+            ["{A(CUR,09,12,0,0,TD)} - {A(CUR,09,12,0,0,TD)} + 1", $variables, "a - a + 1"],
+            ["{A(CUR,09,12,0,0,TD)} - {B(CUR,09,12,0,0,TD)} + 1", $variables, "a - b + 1"],
+        ];
     }
 }
