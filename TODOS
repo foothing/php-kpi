@@ -1,0 +1,5 @@
+- user callback for Variable fetch in formula
+
+- configurable "quantize" step:
+	- as raw kpi value;
+	- as aggregator value;
