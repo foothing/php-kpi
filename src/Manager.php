@@ -4,6 +4,9 @@ use Foothing\Kpi\Aggregator\AggregatorManager;
 use Foothing\Kpi\Cache\KpiCache;
 use Foothing\Kpi\Calculator\CalculatorInterface;
 use Foothing\Kpi\Calculator\FormulaParser;
+use Foothing\Kpi\Calculator\KpiVariable;
+use Foothing\Kpi\Calculator\Variable;
+use Foothing\Kpi\Models\KpiInterface;
 use Foothing\Kpi\Models\MeasurableInterface;
 use Foothing\Kpi\Repositories\DatasetsManager;
 use Foothing\Kpi\Repositories\KpiRepositoryInterface;
@@ -47,6 +50,11 @@ class Manager {
      */
     protected $aggregatorManager;
 
+    /**
+     * @var array
+     */
+    protected $recursiveStack = [];
+
     public function __construct(
         FormulaParser $parser,
         DatasetsManager $datasets,
@@ -82,7 +90,7 @@ class Manager {
 
             // Cycle kpis.
             foreach ($kpis as $kpi) {
-                $compiled = "";
+                /*$compiled = "";
 
                 // Compute each kpi's value and cache.
                 $value = $this->compute($kpi->getFormula(), $measurable, $compiled);
@@ -91,7 +99,10 @@ class Manager {
                 $debug[] = ['kpi' => $kpi, 'measurable' => $measurable, 'compiled' => $compiled, 'value' => $value];
 //print "$kpi->name $measurable->id $value | $kpi->formula<br>";
 
-                $this->cache->put($kpi, $measurable, $value);
+                $this->cache->put($kpi, $measurable, $value);*/
+
+                // @TODO re-enable this when parser is done.
+                $this->computeKpi($measurable, $kpi);
             }
         }
 
@@ -100,18 +111,57 @@ class Manager {
         return $debug;
     }
 
+    public function computeKpi(MeasurableInterface $measurable, KpiInterface $kpi, &$compiledFormula = null) {
+        if ($value = $this->cache->get($measurable->getId(), $kpi->getId())) {
+            return $value;
+        }
+
+        $value = $this->compute($kpi->getFormula(), $measurable, $compiledFormula);
+        $this->cache->put($kpi, $measurable, $value);
+        //var_dump($this->cache->all());
+        return $value;
+    }
+
     public function compute($formula, MeasurableInterface $measurable, &$compiledFormula = null) {
         // Get all variables from formula.
         $variables = $this->parser->parse($formula);
 
         // Get variable values.
         foreach ($variables as $variable) {
-            $variable->value = $this->datasets->getData($measurable, $variable) ?: 0;
+
+            // @TODO code below is broken for sure.
+
+            // Set recursive step for nested kpis.
+            if ($variable instanceof KpiVariable) {
+
+                // Limit recursive stack to 1 item.
+
+                // @FIXME! Broken - disabled.
+                //if (! empty($this->recursiveStack)) {
+                //    throw new \Exception("Recursion too deep in $formula");
+                //}
+
+                // Add kpi to stack.
+                $this->recursiveStack[ $variable->name ] = $variable;
+                //var_dump($this->recursiveStack);
+                // Find kpi and go recursive.
+                $kpi = $this->kpis->findOneBy('name', $variable->name);
+                $variable->value = $this->computeKpi($measurable, $kpi);
+
+                // Reset recursive stack.
+                unset($this->recursiveStack[ $variable->name ]);
+            }
+
+            // Fetch variable value.
+            else {
+                $variable->value = $this->datasets->getData($measurable, $variable) ?: 0;
+            }
         }
 
         // Set parameters and compute formula.
         try {
             return $this->calculator->execute($formula, $variables, $compiledFormula);
+            //print "$compiledFormula\n";
         } catch (DivisionByZeroException $ex) {
             //\Log::warning("Possible zero value for $measurable->id in $formula");
             return 0;

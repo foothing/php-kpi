@@ -20,18 +20,16 @@ class Calculator implements CalculatorInterface {
 
     public function execute($formula, array $variables = null, &$compiled = null) {
         // Compile formula replacing variables.
-        if ($variables) {
-            $compiled = $this->parser->compile($formula, $variables);
-        } else {
-            $compiled = $formula;
-        }
+        $compiled = $this->replaceVariables($formula, $variables);
 
         // Plug and execute math parser.
         $parser = new StdMathParser();
         $evaluator = new Evaluator();
 
         try {
-            $parsed = $parser->parse($compiled);
+            $parsed = $parser->parse($compiled->formula);
+            $evaluator->setVariables($compiled->variables);
+            //print("$formula / $compiled / $parsed<br>");
             //\Log::debug("$formula / $compiled / $parsed");
             return $parsed->accept($evaluator);
         } catch (SyntaxErrorException $ex) {
@@ -39,5 +37,34 @@ class Calculator implements CalculatorInterface {
         } catch (DivisionByZeroException $ex) {
             throw new \Exception("$formula | $compiled division by zero.");
         }
+    }
+
+    public function replaceVariables($formula, $variables) {
+        if (! $variables) {
+            return (object)[
+                "formula" => $formula,
+                "originalFormula" => $formula,
+                "variables" => null,
+            ];
+        }
+
+        $originalFormula = $formula;
+        $currentChar = "a";
+        $outputVariables = [];
+
+        foreach ($variables as $variable) {
+            $formula = str_replace($variable->raw, $currentChar, $formula, $count);
+
+            if ($count) {
+                $outputVariables[ $currentChar ] = $variable->value;
+                $currentChar++;
+            }
+        }
+
+        return (object)[
+            "formula" => $formula,
+            "originalFormula" => $originalFormula,
+            "variables" => $outputVariables,
+        ];
     }
 }

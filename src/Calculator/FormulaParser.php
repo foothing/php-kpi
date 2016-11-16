@@ -4,7 +4,7 @@ use Foothing\Kpi\Calculator\Exceptions\InvalidFormulaException;
 
 class FormulaParser {
 
-    protected static $REGEX_VARIABLE = "/\{([a-zA-z_]+)\((TD|RT)(,[0-9]{4}|,CUR|,PREV)(,[0-9]{2})?(:?,[0-9]{2})?(:?,[0-9])?(:?,[0-9]{1,2})?\)\}/";
+    protected static $REGEX_VARIABLE = "/\{([a-zA-z_]+)\(([a-zA-Z_]+)(,[0-9]{4}|,CUR|,PREV)(,[0-9]{2})?(:?,[0-9]{2})?(:?,[0-9])?(:?,[0-9]{1,2})?\)\}/";
 
     /**
      * Parse variables from a math formula. Variables are expected to be
@@ -45,10 +45,19 @@ class FormulaParser {
 
         // Build the variables.
         for ($i = 0; $i < $matches; $i++) {
+
+            // First and foremost check for Kpi variable.
+            if ($this->parseType($result[1][$i]) == Variable::$TYPE_KPI) {
+                $variables[$i] = new KpiVariable($result[2][$i]);
+                $variables[$i]->raw = $result[0][$i];
+                continue;
+            }
+
+            // Data variable.
             $variables[$i] = new Variable();
             $variables[$i]->raw = $result[0][$i];
             $variables[$i]->name = $result[1][$i];
-            $variables[$i]->type = $this->parseType($result[2][$i]);
+            $variables[$i]->sampleType = $this->parseSampleType($result[2][$i]);
             $variables[$i]->year = $this->parseYear(ltrim($result[3][$i], ","));
             $variables[$i]->month = ltrim($result[4][$i], ",");
             $variables[$i]->day = ltrim($result[5][$i], ",");
@@ -59,12 +68,12 @@ class FormulaParser {
         return $variables;
     }
 
-    public function compile($formula, array $variables) {
-        foreach ($variables as $variable) {
-            $formula = str_replace($variable->raw, $variable->value, $formula);
+    public function parseType($type) {
+        if (strtolower(trim($type)) == 'kpi') {
+            return Variable::$TYPE_KPI;
         }
 
-        return $formula;
+        return Variable::$TYPE_DATA;
     }
 
     public function parseYear($year) {
@@ -79,7 +88,7 @@ class FormulaParser {
         return $year;
     }
 
-    public function parseType($type) {
+    public function parseSampleType($type) {
         if ($type == "TD") {
             return Variable::$TODATE;
         }

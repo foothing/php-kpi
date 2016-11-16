@@ -30,7 +30,7 @@ class FormulaParserTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals("12", $variable->day);
         $this->assertEquals("0", $variable->weekOfYear);
         $this->assertEquals("0", $variable->weekOfYear);
-        $this->assertEquals(Variable::$TODATE, $variable->type);
+        $this->assertEquals(Variable::$TODATE, $variable->sampleType);
     }
 
     public function testParse_real_world_example() {
@@ -42,14 +42,14 @@ class FormulaParserTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals("12", $variables[0]->day);
         $this->assertEquals("0", $variables[0]->weekOfYear);
         $this->assertEquals("0", $variables[0]->weekOfMonth);
-        $this->assertEquals(Variable::$TODATE, $variables[0]->type);
+        $this->assertEquals(Variable::$TODATE, $variables[0]->sampleType);
         $this->assertEquals("AUTO_RC", $variables[1]->name);
         $this->assertEquals(date('Y') - 1, $variables[1]->year);
         $this->assertEquals("09", $variables[1]->month);
         $this->assertEquals("12", $variables[1]->day);
         $this->assertEquals("0", $variables[1]->weekOfYear);
         $this->assertEquals("0", $variables[1]->weekOfMonth);
-        $this->assertEquals(Variable::$TODATE, $variables[1]->type);
+        $this->assertEquals(Variable::$TODATE, $variables[1]->sampleType);
     }
 
     public function testParse_full_date() {
@@ -61,7 +61,7 @@ class FormulaParserTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals("12", $variables[0]->day);
         $this->assertEquals("0", $variables[0]->weekOfYear);
         $this->assertEquals("0", $variables[0]->weekOfMonth);
-        $this->assertEquals(Variable::$TODATE, $variables[0]->type);
+        $this->assertEquals(Variable::$TODATE, $variables[0]->sampleType);
     }
 
     public function testParse_no_week_of_month() {
@@ -73,7 +73,7 @@ class FormulaParserTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals("12", $variables[0]->day);
         $this->assertEquals("0", $variables[0]->weekOfYear);
         $this->assertEmpty($variables[0]->weekOfMonth);
-        $this->assertEquals(Variable::$TODATE, $variables[0]->type);
+        $this->assertEquals(Variable::$TODATE, $variables[0]->sampleType);
     }
 
     public function testParse_no_week_of_year() {
@@ -85,7 +85,7 @@ class FormulaParserTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals("12", $variables[0]->day);
         $this->assertEmpty($variables[0]->weekOfYear);
         $this->assertEmpty($variables[0]->weekOfMonth);
-        $this->assertEquals(Variable::$TODATE, $variables[0]->type);
+        $this->assertEquals(Variable::$TODATE, $variables[0]->sampleType);
     }
 
     public function testParse_no_day() {
@@ -97,7 +97,7 @@ class FormulaParserTest extends \PHPUnit_Framework_TestCase {
         $this->assertEmpty($variables[0]->day);
         $this->assertEmpty($variables[0]->weekOfYear);
         $this->assertEmpty($variables[0]->weekOfMonth);
-        $this->assertEquals(Variable::$TODATE, $variables[0]->type);
+        $this->assertEquals(Variable::$TODATE, $variables[0]->sampleType);
     }
 
     public function testParse_no_month() {
@@ -109,22 +109,7 @@ class FormulaParserTest extends \PHPUnit_Framework_TestCase {
         $this->assertEmpty($variables[0]->day);
         $this->assertEmpty($variables[0]->weekOfYear);
         $this->assertEmpty($variables[0]->weekOfMonth);
-        $this->assertEquals(Variable::$TODATE, $variables[0]->type);
-    }
-
-    public function test_compile() {
-        $formula = "{AUTO_RC(TD,CUR,09,12,0,0)} / {AUTO_RC(TD,PREV,09,12,0,0)}";
-
-        $variables0 = new Variable();
-        $variables0->raw = "{AUTO_RC(TD,CUR,09,12,0,0)}";
-        $variables0->value = 100;
-
-        $variables1 = new Variable();
-        $variables1->raw = "{AUTO_RC(TD,PREV,09,12,0,0)}";
-        $variables1->value = 0.5;
-
-        $compiled = $this->parser->compile($formula, [$variables0, $variables1]);
-        $this->assertEquals("100 / 0.5", $compiled);
+        $this->assertEquals(Variable::$TODATE, $variables[0]->sampleType);
     }
 
     public function test_parseYear() {
@@ -134,9 +119,26 @@ class FormulaParserTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function test_parseType() {
-        $this->assertNull($this->parser->parseType(""));
-        $this->assertNull($this->parser->parseType("X"));
-        $this->assertEquals(Variable::$REALTIME, $this->parser->parseType("RT"));
-        $this->assertEquals(Variable::$TODATE, $this->parser->parseType("TD"));
+        $this->assertNull($this->parser->parseSampleType(""));
+        $this->assertNull($this->parser->parseSampleType("X"));
+        $this->assertEquals(Variable::$TYPE_KPI, $this->parser->parseType("KPI"));
+        $this->assertEquals(Variable::$TYPE_KPI, $this->parser->parseType(" KPI"));
+        $this->assertEquals(Variable::$TYPE_KPI, $this->parser->parseType(" KPI "));
+        $this->assertEquals(Variable::$TYPE_KPI, $this->parser->parseType("KPI "));
+        $this->assertEquals(Variable::$TYPE_DATA, $this->parser->parseType("FOO"));
+    }
+
+    public function test_parseSampleType() {
+        $this->assertNull($this->parser->parseSampleType(""));
+        $this->assertNull($this->parser->parseSampleType("X"));
+        $this->assertEquals(Variable::$REALTIME, $this->parser->parseSampleType("RT"));
+        $this->assertEquals(Variable::$TODATE, $this->parser->parseSampleType("TD"));
+    }
+
+    public function test_parse_nested_kpi() {
+        $formula = "{KPI(TEST,CUR)}";
+        $variable = $this->parser->parse($formula)[0];
+        $this->assertEquals("{KPI(TEST,CUR)}", $variable->raw);
+        $this->assertEquals("TEST", $variable->name);
     }
 }

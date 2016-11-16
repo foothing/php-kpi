@@ -13,7 +13,7 @@ class KpiCache {
     }
 
     public function get($measurableId, $kpiId) {
-        return isset($this->cache[$measurableId]) ? $this->cache[$measurableId][$kpiId] : null;
+        return isset($this->cache[$measurableId]) && isset($this->cache[$measurableId][$kpiId]) ? $this->cache[$measurableId][$kpiId] : null;
     }
 
     public function all() {
