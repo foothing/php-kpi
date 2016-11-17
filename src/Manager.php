@@ -116,8 +116,10 @@ class Manager {
             return $value;
         }
 
+        $compiledFormula = (object)[];
+
         $rawValue = $this->compute($kpi->getFormula(), $measurable, $compiledFormula);
-        $value = $this->getQuantizedValue($kpi->getThresholds(), $rawValue);
+        $value = $this->getQuantizedValue($kpi, $rawValue);
         $this->cache->put($kpi, $measurable, $value);
         $compiledFormula->values = (object)[
             "value" => $value,
@@ -176,11 +178,17 @@ class Manager {
 
     }
 
-    public function getQuantizedValue(array $thresholds, $value) {
+    public function getQuantizedValue(KpiInterface $kpi, $value) {
+        $thresholds = $kpi->getThresholds();
+
         for ($i = 1; $i <= count($thresholds); $i++) {
             $threshold = (float)$thresholds[$i - 1];
 
-            if ($value < $threshold) {
+            if ($kpi->isThresholdReverse() && $value > $threshold) {
+                return $i;
+            }
+
+            elseif (! $kpi->isThresholdReverse() && $value < $threshold) {
                 return $i;
             }
         }

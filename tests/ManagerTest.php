@@ -118,6 +118,20 @@ class ManagerTest extends \PHPUnit_Framework_TestCase {
         $manager->compute("foo bar", $this->measurables()[0]);
     }
 
+    /**
+     * @dataProvider quantizeValuesKpis
+     */
+    public function test_quantizeValues($kpi, $testValue, $expected) {
+        $this->assertEquals($expected, $this->manager->getQuantizedValue($kpi, $testValue));
+    }
+
+    /**
+     * @dataProvider quantizeValuesKpisReverse
+     */
+    public function test_quantizeValues_reverse_thresholds($kpi, $testValue, $expected) {
+        $this->assertEquals($expected, $this->manager->getQuantizedValue($kpi, $testValue));
+    }
+
     // @TODO tests to check for values
 
     public function _test_compute_recursive() {
@@ -181,4 +195,28 @@ class ManagerTest extends \PHPUnit_Framework_TestCase {
         ];
     }
 
+    public function quantizeValuesKpis() {
+        return [
+            [new Kpi(1, "foo", "1+1", [-1, 0, 1]), -2, 1],
+            [new Kpi(1, "foo", "1+1", [-1, 0, 1]), -1, 2],
+            [new Kpi(1, "foo", "1+1", [-1, 0, 1]), -0.9, 2],
+            [new Kpi(1, "foo", "1+1", [-1, 0, 1]), 0, 3],
+            [new Kpi(1, "foo", "1+1", [-1, 0, 1]), 0.1, 3],
+            [new Kpi(1, "foo", "1+1", [-1, 0, 1]), 1, 4],
+            [new Kpi(1, "foo", "1+1", [-1, 0, 1]), 1.1, 4],
+        ];
+    }
+
+    public function quantizeValuesKpisReverse() {
+        return [
+            [new Kpi(1, "foo", "1+1", [1, 0, -1], 1), 2, 1],
+            [new Kpi(1, "foo", "1+1", [1, 0, -1], 1), 1.1, 1],
+            [new Kpi(1, "foo", "1+1", [1, 0, -1], 1), 0.9, 2],
+            [new Kpi(1, "foo", "1+1", [1, 0, -1], 1), 0.1, 2],
+            [new Kpi(1, "foo", "1+1", [1, 0, -1], 1), 0, 3],
+            [new Kpi(1, "foo", "1+1", [1, 0, -1], 1), -0.1, 3],
+            [new Kpi(1, "foo", "1+1", [1, 0, -1], 1), -1, 4],
+            [new Kpi(1, "foo", "1+1", [1, 0, -1], 1), -1.1, 4],
+        ];
+    }
 }

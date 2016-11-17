@@ -6,5 +6,5 @@ interface KpiInterface {
     public function getName();
     public function getFormula();
     public function getThresholds();
-
+    public function isThresholdReverse();
 }
