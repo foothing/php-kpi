@@ -116,9 +116,13 @@ class Manager {
             return $value;
         }
 
-        $value = $this->compute($kpi->getFormula(), $measurable, $compiledFormula);
+        $rawValue = $this->compute($kpi->getFormula(), $measurable, $compiledFormula);
+        $value = $this->getQuantizedValue($kpi->getThresholds(), $rawValue);
         $this->cache->put($kpi, $measurable, $value);
-        //var_dump($this->cache->all());
+        $compiledFormula->values = (object)[
+            "value" => $value,
+            "rawValue" => $rawValue,
+        ];
         return $value;
     }
 
@@ -170,5 +174,17 @@ class Manager {
             return 0;
         }
 
+    }
+
+    public function getQuantizedValue(array $thresholds, $value) {
+        for ($i = 1; $i <= count($thresholds); $i++) {
+            $threshold = (float)$thresholds[$i - 1];
+
+            if ($value < $threshold) {
+                return $i;
+            }
+        }
+
+        return $i;
     }
 }

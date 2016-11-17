@@ -68,13 +68,14 @@ class AggregatorManager {
                     $balancedValue = $this->getBalancedValue($kpi, $configValue->get($kpi->getKpi()->getId()));
 
                     // The quantized value after the balance.
-                    $quantizedValue = $this->getQuantizedValue($kpi, $balancedValue);
+      //$quantizedValue = $this->getQuantizedValue($kpi, $balancedValue);
                     //\Log::debug("B:" . $kpi->getKpi()->id . "/" . $measurableId . "/" . $kpi->getTransientValue() . "/" . $balancedValue . "/" . $quantizedValue);
                     //\Log::debug("Q:" . $kpi->getKpi()->id . "/" . $measurableId . "/" . $quantizedValue);
-                    $balancedValues[] = $quantizedValue;
+      //$balancedValues[] = $quantizedValue;
+        $balancedValues[] = $balancedValue;
 
                     // Store aggregated value.
-                    $this->aggregators->store($configValue, $measurableId, $kpi, $quantizedValue);
+                    $this->aggregators->store($configValue, $measurableId, $kpi, $balancedValue);
                 }
 
                 // Store the global balanced value.
@@ -90,7 +91,7 @@ class AggregatorManager {
      *
      * @return int
      */
-    public function getQuantizedValue(TransientKpi $kpi, $value) {
+    public function ________getQuantizedValue(TransientKpi $kpi, $value) {
         $thresholds = $kpi->getKpi()->getThresholds();
 
         for ($i = 1; $i <= count($thresholds); $i++) {
