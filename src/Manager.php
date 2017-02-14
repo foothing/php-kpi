@@ -1,6 +1,7 @@
 <?php namespace Foothing\Kpi;
 
 use Foothing\Kpi\Aggregator\AggregatorManager;
+use Foothing\Kpi\Aggregator\Exceptions\KpiNotFoundException;
 use Foothing\Kpi\Cache\KpiCache;
 use Foothing\Kpi\Calculator\CalculatorInterface;
 use Foothing\Kpi\Calculator\FormulaParser;
@@ -152,6 +153,11 @@ class Manager {
                 //var_dump($this->recursiveStack);
                 // Find kpi and go recursive.
                 $kpi = $this->kpis->findOneBy('name', $variable->name);
+
+                if (! $kpi) {
+                    throw new KpiNotFoundException("KPI $variable->name not found in recursive forumla.");
+                }
+
                 $variable->value = $this->computeKpi($measurable, $kpi);
 
                 // Reset recursive stack.
