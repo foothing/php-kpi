@@ -113,8 +113,8 @@ class Manager {
     }
 
     public function computeKpi(MeasurableInterface $measurable, KpiInterface $kpi, &$compiledFormula = null) {
-        if ($value = $this->cache->get($measurable->getId(), $kpi->getId())) {
-            return $value;
+        if ($transientKpi = $this->cache->get($measurable->getId(), $kpi->getId())) {
+            return $transientKpi->getTransientValue();
         }
 
         $compiledFormula = (object)[];
