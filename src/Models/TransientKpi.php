@@ -1,5 +1,6 @@
 <?php namespace Foothing\Kpi\Models;
 
+use Foothing\Kpi\Calculator\Result;
 use Foothing\Kpi\Models\Traits\QuantizeValues;
 
 class TransientKpi {
@@ -20,13 +21,26 @@ class TransientKpi {
     protected $quantizedValue;
 
     /**
+     * @var string
+     */
+    protected $computedFormula;
+
+    /**
+     * @var array
+     */
+    protected $variables;
+
+    /**
      * @var float
      */
     protected $balancedValue;
 
-    public function __construct(KpiInterface $kpi, $value) {
+    public function __construct(KpiInterface $kpi, Result $result) {
         $this->setKpi($kpi);
-        $this->setTransientValue($value);
+        $this->setTransientValue($result->value);
+        $this->quantizedValue = $result->quantizedValue;
+        $this->computedFormula = $result->formula;
+        $this->variables = $result->variables;
     }
 
     public function setKpi(KpiInterface $kpi) {

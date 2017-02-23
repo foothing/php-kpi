@@ -2,6 +2,7 @@
 
 use Foothing\Kpi\Calculator\CalculatorInterface;
 use Foothing\Kpi\Calculator\FormulaParser;
+use Foothing\Kpi\Calculator\Result;
 use MathParser\Exceptions\DivisionByZeroException;
 use MathParser\Exceptions\SyntaxErrorException;
 use MathParser\Interpreting\Evaluator;
@@ -18,7 +19,7 @@ class Calculator implements CalculatorInterface {
         $this->parser = $parser;
     }
 
-    public function execute($formula, array $variables = null, &$compiled = null) {
+    public function execute($formula, array $variables = null) {
         // Compile formula replacing variables.
         $compiled = $this->replaceVariables($formula, $variables);
 
@@ -31,7 +32,8 @@ class Calculator implements CalculatorInterface {
             $evaluator->setVariables($compiled->variables);
             //print("$formula / $compiled / $parsed<br>");
             //\Log::debug("$formula / $compiled / $parsed");
-            return $parsed->accept($evaluator);
+            $compiled->value = $parsed->accept($evaluator);
+            return $compiled;
         } catch (SyntaxErrorException $ex) {
             throw new \Exception("$formula | $compiled has syntax error.");
         } catch (DivisionByZeroException $ex) {
@@ -41,11 +43,7 @@ class Calculator implements CalculatorInterface {
 
     public function replaceVariables($formula, $variables) {
         if (! $variables) {
-            return (object)[
-                "formula" => $formula,
-                "originalFormula" => $formula,
-                "variables" => null,
-            ];
+            return new Result($formula, $formula, []);
         }
 
         $originalFormula = $formula;
@@ -61,10 +59,6 @@ class Calculator implements CalculatorInterface {
             }
         }
 
-        return (object)[
-            "formula" => $formula,
-            "originalFormula" => $originalFormula,
-            "variables" => $outputVariables,
-        ];
+        return new Result($formula, $originalFormula, $outputVariables);
     }
 }

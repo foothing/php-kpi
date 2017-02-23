@@ -112,31 +112,28 @@ class Manager {
         return $debug;
     }
 
-    public function computeKpi(MeasurableInterface $measurable, KpiInterface $kpi, &$compiledFormula = null) {
+    public function computeKpi(MeasurableInterface $measurable, KpiInterface $kpi) {
         if ($transientKpi = $this->cache->get($measurable->getId(), $kpi->getId())) {
             return $transientKpi->getTransientValue();
         }
 
-        $compiledFormula = (object)[];
+        if (! $computed = $this->compute($kpi->getFormula(), $measurable)) {
+            return null;
+        }
 
-        $rawValue = $this->compute($kpi->getFormula(), $measurable, $compiledFormula);
-        $value = $this->getQuantizedValue($kpi, $rawValue);
-        $this->cache->put($kpi, $measurable, $value);
-        $compiledFormula->values = (object)[
-            "value" => $value,
-            "rawValue" => $rawValue,
-        ];
-        return $value;
+        $computed->quantizedValue = $this->getQuantizedValue($kpi, $computed->value);
+        $this->cache->put($kpi, $measurable, $computed);
+        return $computed;
     }
 
-    public function compute($formula, MeasurableInterface $measurable, &$compiledFormula = null) {
+    public function compute($formula, MeasurableInterface $measurable) {
         // Get all variables from formula.
         $variables = $this->parser->parse($formula);
 
         // Get variable values.
         foreach ($variables as $variable) {
 
-            // @TODO code below is broken for sure.
+            // @TODO check recursive steps.
 
             // Set recursive step for nested kpis.
             if ($variable instanceof KpiVariable) {
@@ -151,6 +148,7 @@ class Manager {
                 // Add kpi to stack.
                 $this->recursiveStack[ $variable->name ] = $variable;
                 //var_dump($this->recursiveStack);
+
                 // Find kpi and go recursive.
                 $kpi = $this->kpis->findOneBy('name', $variable->name);
 
@@ -158,7 +156,8 @@ class Manager {
                     throw new KpiNotFoundException("KPI $variable->name not found in recursive forumla.");
                 }
 
-                $variable->value = $this->computeKpi($measurable, $kpi);
+                $computed = $this->computeKpi($measurable, $kpi);
+                $variable->value = $computed ? $computed->quantizedValue : null;
 
                 // Reset recursive stack.
                 unset($this->recursiveStack[ $variable->name ]);
@@ -172,15 +171,15 @@ class Manager {
 
         // Set parameters and compute formula.
         try {
-            return $this->calculator->execute($formula, $variables, $compiledFormula);
+            return $this->calculator->execute($formula, $variables);
             //print "$compiledFormula\n";
         } catch (DivisionByZeroException $ex) {
-            //\Log::warning("Possible zero value for $measurable->id in $formula");
-            return 0;
-        } catch (\Exception $ex) {
-            //\Log::error($ex->getMessage());
-            return 0;
-        }
+            \Log::warning("Possible zero value for $measurable->id in $formula");
+            return null;
+        } /*catch (\Exception $ex) {
+            \Log::error($ex->getMessage());
+            return null;
+        }*/
 
     }
 

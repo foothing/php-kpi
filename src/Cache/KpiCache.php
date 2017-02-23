@@ -1,5 +1,6 @@
 <?php namespace Foothing\Kpi\Cache;
 
+use Foothing\Kpi\Calculator\Result;
 use Foothing\Kpi\Models\KpiInterface;
 use Foothing\Kpi\Models\MeasurableInterface;
 use Foothing\Kpi\Models\TransientKpi;
@@ -8,8 +9,8 @@ class KpiCache {
 
     protected $cache = [];
 
-    public function put(KpiInterface $kpi, MeasurableInterface $measurable, $value) {
-        $this->cache[ $measurable->getId() ][ $kpi->getId() ] = new TransientKpi($kpi, $value);
+    public function put(KpiInterface $kpi, MeasurableInterface $measurable, Result $computedKpi) {
+        $this->cache[ $measurable->getId() ][ $kpi->getId() ] = new TransientKpi($kpi, $computedKpi);
     }
 
     public function get($measurableId, $kpiId) {
