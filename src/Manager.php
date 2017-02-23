@@ -176,10 +176,10 @@ class Manager {
         } catch (DivisionByZeroException $ex) {
             \Log::warning("Possible zero value for $measurable->id in $formula");
             return null;
-        } /*catch (\Exception $ex) {
+        } catch (\Exception $ex) {
             \Log::error($ex->getMessage());
             return null;
-        }*/
+        }
 
     }
 
