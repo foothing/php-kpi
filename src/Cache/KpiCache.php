@@ -27,4 +27,12 @@ class KpiCache {
     public function isEmpty() {
         return empty($this->cache);
     }
+
+    public function setCache($cache) {
+        $this->cache = $cache;
+    }
+
+    public function getCache() {
+        return $this->cache;
+    }
 }

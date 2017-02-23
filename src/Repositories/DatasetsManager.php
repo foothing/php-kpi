@@ -43,6 +43,14 @@ class DatasetsManager {
             return $cached;
         }
 
+        // Value has not been cached (skipped the above condition)
+        // but variable has been cached with time string.
+        // That means we have already queried for that data but found
+        // no results, so we should not query the database again.
+        if ($this->cacheHasVariable($variable)) {
+            return null;
+        }
+
         // Assuming
         $data = $this->datasets->findByTime($variable);
 //dd($data);
@@ -56,15 +64,19 @@ class DatasetsManager {
     }
 
     protected function cacheSet(Variable $variable, DataInterface $data) {
+        if ($this->cacheHas($variable, $data->getMeasurableId())) {
+            return null;
+        }
         //print "cache set $variable->name for " . $data->getMeasurableId() . "<br>";
         return $this->cache[$variable->name][ $variable->getTimeString() ][ $data->getMeasurableId() ] = $data->getValue($variable->name);
     }
 
     protected function cacheGet(Variable $variable, $measurableId) {
         if (! $this->cacheHas($variable, $measurableId)) {
+            //file_put_contents("/srv/portaleagendo.it/data/kpi", "cache miss $measurableId ". $variable->getTimeString() . "\n", FILE_APPEND);
             return null;
         }
-
+        //file_put_contents("/srv/portaleagendo.it/data/kpi", "cache hit $measurableId ". $variable->getTimeString() . "\n", FILE_APPEND);
         return $this->cache[$variable->name][ $variable->getTimeString() ][$measurableId];
     }
 
@@ -73,5 +85,9 @@ class DatasetsManager {
             isset($this->cache[ $variable->name ])
             && isset($this->cache[ $variable->name ][ $variable->getTimeString() ])
             && isset($this->cache[ $variable->name ][ $variable->getTimeString() ][ $measurableId ]);
+    }
+
+    protected function cacheHasVariable(Variable $variable) {
+        return isset($this->cache[ $variable->name ]) && isset($this->cache[ $variable->name ][ $variable->getTimeString() ]);
     }
 }
