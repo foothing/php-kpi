@@ -86,34 +86,13 @@ class AggregatorManager {
 
     /**
      * @param TransientKpi $kpi
-     * @param float        $value
-     * The balanced kpi value.
-     *
-     * @return int
-     */
-    public function ________getQuantizedValue(TransientKpi $kpi, $value) {
-        $thresholds = $kpi->getKpi()->getThresholds();
-
-        for ($i = 1; $i <= count($thresholds); $i++) {
-            $threshold = (float)$thresholds[$i - 1];
-
-            if ($value < $threshold) {
-                return $i;
-            }
-        }
-
-        return $i;
-    }
-
-    /**
-     * @param TransientKpi $kpi
      * @param float        $weight
      * 0 <= $weight <= 1
      *
      * @return float
      */
     public function getBalancedValue(TransientKpi $kpi, $weight) {
-        return $kpi->getTransientValue() * $weight;
+        return $kpi->getQuantizedValue() * $weight;
     }
 
     public function getBalancedAggregate(array $balancedValues) {
