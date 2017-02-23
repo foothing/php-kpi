@@ -70,4 +70,12 @@ class TransientKpi {
     public function getBalancedValue() {
         return $this->balancedValue;
     }
+
+    public function getComputedFormula() {
+        return $this->computedFormula;
+    }
+
+    public function getVariables() {
+        return $this->variables;
+    }
 }
