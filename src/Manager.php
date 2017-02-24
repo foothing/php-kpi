@@ -56,6 +56,12 @@ class Manager {
      */
     protected $recursiveStack = [];
 
+    /**
+     * Store kpis in order to avoid repeated reads.
+     * @var array
+     */
+    protected $kpiLocalCache = [];
+
     public function __construct(
         FormulaParser $parser,
         DatasetsManager $datasets,
@@ -79,42 +85,27 @@ class Manager {
         $this->aggregatorManager->clearCache();
 
         // Fetch all configured kpis.
-        $kpis = $this->kpis->all();
+        $kpis = $this->loadKpis();
 
         // Fetch all measurable entities.
         $measurables = $this->measurables->all();
-
-        $debug = [];
 
         // Evaluate kpis for each measurable.
         foreach($measurables as $measurable) {
 
             // Cycle kpis.
             foreach ($kpis as $kpi) {
-                /*$compiled = "";
-
-                // Compute each kpi's value and cache.
-                $value = $this->compute($kpi->getFormula(), $measurable, $compiled);
-
-//\Log::debug($kpi->getName() . " " . $measurable->getName() . " " .  $value);
-                $debug[] = ['kpi' => $kpi, 'measurable' => $measurable, 'compiled' => $compiled, 'value' => $value];
-//print "$kpi->name $measurable->id $value | $kpi->formula<br>";
-
-                $this->cache->put($kpi, $measurable, $value);*/
-
-                // @TODO re-enable this when parser is done.
                 $this->computeKpi($measurable, $kpi);
             }
         }
 
+        // Rebuild the aggregator cache.
         $this->aggregatorManager->rebuild($this->cache);
-
-        return $debug;
     }
 
     public function computeKpi(MeasurableInterface $measurable, KpiInterface $kpi) {
         if ($transientKpi = $this->cache->get($measurable->getId(), $kpi->getId())) {
-            return $transientKpi->getTransientValue();
+            return $transientKpi->getResult();
         }
 
         if (! $computed = $this->compute($kpi->getFormula(), $measurable)) {
@@ -150,7 +141,7 @@ class Manager {
                 //var_dump($this->recursiveStack);
 
                 // Find kpi and go recursive.
-                $kpi = $this->kpis->findOneBy('name', $variable->name);
+                $kpi = $this->getKpi($variable->name);
 
                 if (! $kpi) {
                     throw new KpiNotFoundException("KPI $variable->name not found in recursive forumla.");
@@ -174,10 +165,10 @@ class Manager {
             return $this->calculator->execute($formula, $variables);
             //print "$compiledFormula\n";
         } catch (DivisionByZeroException $ex) {
-            \Log::warning("Possible zero value for $measurable->id in $formula");
+            //\Log::warning("Possible zero value for $measurable->id in $formula");
             return null;
         } catch (\Exception $ex) {
-            \Log::error($ex->getMessage());
+            //\Log::error($ex->getMessage());
             return null;
         }
 
@@ -199,5 +190,20 @@ class Manager {
         }
 
         return $i;
+    }
+
+    protected function loadKpis() {
+        $kpis = $this->kpis->all();
+
+        foreach($kpis as $kpi) {
+            /** @var $kpi KpiInterface */
+            $this->kpiLocalCache[ $kpi->getName() ] = $kpi;
+        }
+
+        return $kpis;
+    }
+
+    protected function getKpi($name) {
+        return $this->kpiLocalCache[$name];
     }
 }

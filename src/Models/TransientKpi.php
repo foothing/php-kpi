@@ -18,29 +18,17 @@ class TransientKpi {
     /**
      * @var float
      */
-    protected $quantizedValue;
-
-    /**
-     * @var string
-     */
-    protected $computedFormula;
-
-    /**
-     * @var array
-     */
-    protected $variables;
-
-    /**
-     * @var float
-     */
     protected $balancedValue;
+
+    /**
+     * @var \Foothing\Kpi\Calculator\Result
+     */
+    protected $result;
 
     public function __construct(KpiInterface $kpi, Result $result) {
         $this->setKpi($kpi);
         $this->setTransientValue($result->value);
-        $this->quantizedValue = $result->quantizedValue;
-        $this->computedFormula = $result->formula;
-        $this->variables = $result->variables;
+        $this->result = $result;
     }
 
     public function setKpi(KpiInterface $kpi) {
@@ -60,7 +48,7 @@ class TransientKpi {
     }
 
     public function getQuantizedValue() {
-        return $this->quantizedValue;
+        return $this->result->quantizedValue;
     }
 
     public function setBalancedValue($balancedValue) {
@@ -72,10 +60,14 @@ class TransientKpi {
     }
 
     public function getComputedFormula() {
-        return $this->computedFormula;
+        return $this->result->formula;
     }
 
     public function getVariables() {
-        return $this->variables;
+        return $this->result->variables;
+    }
+
+    public function getResult() {
+        return $this->result;
     }
 }
